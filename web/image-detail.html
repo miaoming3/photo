@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片详情 - 图片分享平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { 
+            background-color: #f8f9fa; 
+            min-height: 100vh; 
+        }
+        .sidebar { 
+            background-color: white; 
+            height: 100vh; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.05); 
+            position: sticky; 
+            top: 0; 
+        }
+        .nav-link { 
+            color: #495057; 
+            padding: 0.75rem 1rem; 
+            border-left: 3px solid transparent; 
+        }
+        .nav-link:hover, .nav-link.active { 
+            color: #4e73df; 
+            background-color: #f8f9fa; 
+            border-left-color: #4e73df; 
+        }
+        .nav-link i { 
+            margin-right: 0.5rem; 
+            width: 1.25rem; 
+            text-align: center; 
+        }
+        .main-content { 
+            padding-top: 2rem; 
+        }
+        .image-container { 
+            background-color: white; 
+            border-radius: 8px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.05); 
+            padding: 1.5rem; 
+            margin-bottom: 2rem; 
+        }
+        .image-detail { 
+            max-width: 100%; 
+            border-radius: 8px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.1); 
+        }
+        .image-info { 
+            padding: 1.5rem; 
+        }
+        .image-title { 
+            font-size: 1.75rem; 
+            font-weight: 600; 
+            margin-bottom: 0.5rem; 
+        }
+        .uploader-info { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 1rem; 
+        }
+        .uploader-avatar { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            margin-right: 0.75rem; 
+        }
+        .uploader-name { 
+            font-weight: 500; 
+        }
+        .upload-date { 
+            color: #6c757d; 
+            font-size: 0.875rem; 
+        }
+        .image-meta { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 1.5rem; 
+            margin: 1.5rem 0; 
+            padding: 1rem 0; 
+            border-top: 1px solid #e9ecef; 
+            border-bottom: 1px solid #e9ecef; 
+        }
+        .meta-item { 
+            display: flex; 
+            align-items: center; 
+        }
+        .meta-item i { 
+            margin-right: 0.5rem; 
+            color: #4e73df; 
+        }
+        .price-tag { 
+            display: inline-block; 
+            padding: 0.25rem 0.75rem; 
+            background-color: #4e73df; 
+            color: white; 
+            border-radius: 4px; 
+            font-weight: 500; 
+            margin-right: 1rem; 
+        }
+        .free-tag { 
+            background-color: #28a745; 
+        }
+        .category-badge { 
+            background-color: #e9ecef; 
+            color: #495057; 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 4px; 
+            font-size: 0.875rem; 
+        }
+        .action-buttons { 
+            display: flex; 
+            gap: 1rem; 
+            margin: 1.5rem 0; 
+        }
+        .btn-icon { 
+            margin-right: 0.5rem; 
+        }
+        .section-title { 
+            font-size: 1.25rem; 
+            font-weight: 600; 
+            margin-bottom: 1rem; 
+            padding-bottom: 0.5rem; 
+            border-bottom: 1px solid #e9ecef; 
+        }
+        .description-content { 
+            line-height: 1.6; 
+            color: #495057; 
+        }
+        .comments-section { 
+            background-color: white; 
+            border-radius: 8px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.05); 
+            padding: 1.5rem; 
+            margin-bottom: 2rem; 
+        }
+        .comment-form { 
+            margin-bottom: 2rem; 
+        }
+        .comment-item { 
+            padding: 1rem 0; 
+            border-bottom: 1px solid #e9ecef; 
+        }
+        .comment-item:last-child { 
+            border-bottom: none; 
+        }
+        .comment-header { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 0.5rem; 
+        }
+        .comment-author { 
+            display: flex; 
+            align-items: center; 
+        }
+        .comment-avatar { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            margin-right: 0.5rem; 
+        }
+        .comment-name { 
+            font-weight: 500; 
+            margin-right: 0.5rem; 
+        }
+        .comment-date { 
+            font-size: 0.875rem; 
+            color: #6c757d; 
+        }
+        .comment-content { 
+            color: #495057; 
+        }
+        .alert-container { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            z-index: 1050; 
+        }
+        .loading-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background-color: rgba(255,255,255,0.8); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1040; 
+        }
+        .not-found-container { 
+            text-align: center; 
+            padding: 4rem 0; 
+            color: #6c757d; 
+        }
+        /* 模态框样式 */
+        .modal-content { 
+            border: none; 
+            border-radius: 10px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+        }
+        .modal-header { 
+            border-bottom: none; 
+            padding: 1.5rem; 
+        }
+        .modal-footer { 
+            border-top: none; 
+            padding: 1rem 1.5rem; 
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="alert-container" id="alertContainer"></div>
+
+    <!-- 购买确认模态框 -->
+    <div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="purchaseModalLabel">确认购买</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>您确定要购买此图片吗？</p>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title" id="modalImageTitle"></h6>
+                            <p class="card-text"><strong>价格:</strong> <span id="modalImagePrice"></span></p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="purchaseImageId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="confirmPurchaseBtn">确认购买</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <div class="d-flex align-items-center pb-3 mb-3 border-bottom w-100">
+                        <i class="bi bi-image-fill fs-2 me-2 text-primary"></i>
+                        <span class="fs-5 d-none d-sm-inline">图片分享平台</span>
+                    </div>
+
+                    <ul class="nav nav-pills flex-column mb-auto w-100">
+                        <li class="nav-item">
+                            <a href="/dashboard" class="nav-link">
+                                <i class="bi bi-speedometer2"></i> 仪表盘
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/gallery" class="nav-link active" aria-current="page">
+                                <i class="bi bi-grid-1x2-fill"></i> 图片画廊
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/my-images" class="nav-link">
+                                <i class="bi bi-images"></i> 我的图片
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/upload" class="nav-link">
+                                <i class="bi bi-cloud-upload"></i> 上传图片
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <i class="bi bi-credit-card"></i> 我的订单
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <i class="bi bi-wallet2"></i> 提现管理
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <i class="bi bi-bell"></i> 通知中心
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="mt-auto pb-4 w-100">
+                        <div class="dropdown pb-2">
+                            <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="https://ui-avatars.com/api/?name=User&background=4e73df&color=fff" alt="用户头像" width="32" height="32" class="rounded-circle me-2">
+                                <span class="d-none d-sm-inline" id="usernameDisplay">用户名</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-light text-small shadow" aria-labelledby="dropdownUser">
+                                <li><a class="dropdown-item" href="#">个人资料</a></li>
+                                <li><a class="dropdown-item" href="#">账户设置</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutLink">退出登录</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- 顶部导航 -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 fixed-top">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav ms-auto">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-bell"></i>
+                                        <span class="badge bg-danger rounded-pill" id="unreadCount" style="position: absolute; top: 10px; right: 10px; display: none;">0</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+                                        <li><h6 class="dropdown-header">通知</h6></li>
+                                        <li><a class="dropdown-item" href="#">暂无新通知</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- 图片未找到 -->
+                <div class="not-found-container" id="notFoundContainer" style="display: none;">
+                    <i class="bi bi-exclamation-circle fs-1 mb-3"></i>
+                    <h3>图片未找到</h3>
+                    <p>该图片不存在或已被删除</p>
+                    <a href="/gallery" class="btn btn-primary mt-3">返回图片画廊</a>
+                </div>
+
+                <!-- 图片详情容器 -->
+                <div id="imageDetailContainer" style="display: none;">
+                    <!-- 图片展示 -->
+                    <div class="image-container">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <img id="mainImage" src="" alt="图片详情" class="image-detail img-fluid mx-auto d-block">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="image-info">
+                                    <h1 class="image-title" id="imageTitle"></h1>
+
+                                    <div class="uploader-info">
+                                        <img id="uploaderAvatar" src="" alt="上传者头像" class="uploader-avatar">
+                                        <div>
+                                            <div class="uploader-name" id="uploaderName"></div>
+                                            <div class="upload-date" id="uploadDate"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="price-tag" id="priceTag"></span>
+                                        <span class="category-badge" id="categoryBadge"></span>
+                                    </div>
+
+                                    <div class="image-meta">
+                                        <div class="meta-item">
+                                            <i class="bi bi-eye"></i>
+                                            <span id="viewCount">0</span> 次查看
+                                        </div>
+                                        <div class="meta-item">
+                                            <i class="bi bi-download"></i>
+                                            <span id="downloadCount">0</span> 次下载
+                                        </div>
+                                        <div class="meta-item">
+                                            <i class="bi bi-heart"></i>
+                                            <span id="likeCount">0</span> 人喜欢
+                                        </div>
+                                    </div>
+
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary" id="downloadBtn">
+                                            <i class="bi bi-download btn-icon"></i> 下载图片
+                                        </button>
+                                        <button class="btn btn-outline-secondary" id="likeBtn">
+                                            <i class="bi bi-heart btn-icon"></i> <span id="likeText">喜欢</span>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" id="shareBtn">
+                                            <i class="bi bi-share btn-icon"></i> 分享
+                                        </button>
+                                    </div>
+
+                                    <div id="ownerActions" style="display: none;">
+                                        <hr>
+                                        <div class="d-flex gap-1">
+                                            <a href="/my-images" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-pencil btn-icon"></i> 编辑图片
+                                            </a>
+                                            <button class="btn btn-outline-danger btn-sm" id="deleteBtn">
+                                                <i class="bi bi-trash btn-icon"></i> 删除图片
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图片描述 -->
+                    <div class="image-container">
+                        <h2 class="section-title">图片描述</h2>
+                        <div class="description-content" id="imageDescription"></div>
+                    </div>
+
+                    <!-- 评论区 -->
+                    <div class="comments-section">
+                        <h2 class="section-title">用户评论</h2>
+
+                        <!-- 评论表单 -->
+                        <div class="comment-form" id="commentFormContainer">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="commentContent" rows="3" placeholder="写下您的评论..."></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-primary" id="submitCommentBtn">提交评论</button>
+                            </div>
+                        </div>
+
+                        <!-- 评论列表 -->
+                        <div id="commentsList">
+                            <!-- 评论将通过JavaScript动态加载 -->
+                        </div>
+
+                        <!-- 加载更多评论 -->
+                        <div class="text-center mt-3">
+                            <button class="btn btn-outline-secondary" id="loadMoreCommentsBtn" style="display: none;">加载更多评论</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // API基础URL
+        const API_BASE_URL = '/api';
+
+        // 当前图片ID
+        let currentImageId = null;
+        // 当前用户ID
+        let currentUserId = null;
+        // 评论分页参数
+        let commentPage = 1;
+        const commentPageSize = 10;
+        let hasMoreComments = true;
+
+        // 模态框实例
+        let purchaseModalInstance = null;
+
+        // DOM元素
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const alertContainer = document.getElementById('alertContainer');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const unreadCount = document.getElementById('unreadCount');
+        const logoutLink = document.getElementById('logoutLink');
+        const imageDetailContainer = document.getElementById('imageDetailContainer');
+        const notFoundContainer = document.getElementById('notFoundContainer');
+        const mainImage = document.getElementById('mainImage');
+        const imageTitle = document.getElementById('imageTitle');
+        const uploaderAvatar = document.getElementById('uploaderAvatar');
+        const uploaderName = document.getElementById('uploaderName');
+        const uploadDate = document.getElementById('uploadDate');
+        const priceTag = document.getElementById('priceTag');
+        const categoryBadge = document.getElementById('categoryBadge');
+        const viewCount = document.getElementById('viewCount');
+        const downloadCount = document.getElementById('downloadCount');
+        const likeCount = document.getElementById('likeCount');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const likeBtn = document.getElementById('likeBtn');
+        const likeText = document.getElementById('likeText');
+        const shareBtn = document.getElementById('shareBtn');
+        const ownerActions = document.getElementById('ownerActions');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const imageDescription = document.getElementById('imageDescription');
+        const commentContent = document.getElementById('commentContent');
+        const submitCommentBtn = document.getElementById('submitCommentBtn');
+        const commentsList = document.getElementById('commentsList');
+        const loadMoreCommentsBtn = document.getElementById('loadMoreCommentsBtn');
+        const commentFormContainer = document.getElementById('commentFormContainer');
+        const modalImageTitle = document.getElementById('modalImageTitle');
+        const modalImagePrice = document.getElementById('modalImagePrice');
+        const purchaseImageId = document.getElementById('purchaseImageId');
+        const confirmPurchaseBtn = document.getElementById('confirmPurchaseBtn');
+
+        // 显示加载状态
+        function showLoading() {
+            loadingOverlay.style.display = 'flex';
+        }
+
+        // 隐藏加载状态
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        // 显示通知
+        function showAlert(message, type = 'danger') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.role = 'alert';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alert);
+
+            // 3秒后自动关闭
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 3000);
+        }
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // 未登录，不跳转，但隐藏评论表单
+                commentFormContainer.style.display = 'none';
+                return false;
+            }
+            return true;
+        }
+
+        // 设置Axios请求头
+        function setupAxios() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+        }
+
+        // 获取URL参数
+        function getUrlParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        // 获取用户信息
+        async function getUserInfo() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/user/info`);
+                if (response.data.code === 0) {
+                    const user = response.data.data;
+                    usernameDisplay.textContent = user.username || '用户';
+                    currentUserId = user.id;
+                }
+            } catch (error) {
+                console.error('获取用户信息错误:', error);
+                // 未登录状态下忽略此错误
+            }
+        }
+
+        // 获取未读通知数量
+        async function getUnreadNotificationCount() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/notification/unread/count`);
+                if (response.data.code === 0 && response.data.data.count > 0) {
+                    unreadCount.textContent = response.data.data.count;
+                    unreadCount.style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('获取未读通知数量错误:', error);
+                // 忽略错误
+            }
+        }
+
+        // 获取图片详情
+        async function getImageDetail() {
+            try {
+                showLoading();
+
+                const imageId = getUrlParam('id');
+                if (!imageId) {
+                    // 没有图片ID参数
+                    showNotFound();
+                    return;
+                }
+
+                currentImageId = imageId;
+
+                // 调用API获取图片详情
+                const response = await axios.get(`${API_BASE_URL}/file/detail?id=${imageId}`);
+
+                if (response.data.code === 0) {
+                    const image = response.data.data;
+                    renderImageDetail(image);
+                    // 获取评论
+                    getComments();
+                } else {
+                    showNotFound();
+                    showAlert(response.data.msg || '获取图片详情失败');
+                }
+            } catch (error) {
+                console.error('获取图片详情错误:', error);
+                showNotFound();
+                showAlert('获取图片详情失败，请刷新页面重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 渲染图片详情
+        function renderImageDetail(image) {
+            // 设置图片信息
+            mainImage.src = `/uploads/${image.file_path}`;
+            imageTitle.textContent = image.title || '未命名图片';
+            uploaderAvatar.src = image.user_avatar || 'https://ui-avatars.com/api/?name=User&background=4e73df&color=fff';
+            uploaderName.textContent = image.user_name || '未知用户';
+            uploadDate.textContent = formatDate(image.created_at);
+            categoryBadge.textContent = getCategoryName(image.category);
+            viewCount.textContent = image.view_count || 0;
+            downloadCount.textContent = image.download_count || 0;
+            likeCount.textContent = image.like_count || 0;
+            imageDescription.textContent = image.description || '该图片暂无描述';
+
+            // 设置价格标签
+            if (image.price === 0) {
+                priceTag.textContent = '免费';
+                priceTag.classList.add('free-tag');
+            } else {
+                priceTag.textContent = `¥${image.price.toFixed(2)}`;
+            }
+
+            // 检查是否是图片所有者
+            if (currentUserId && image.user_id === currentUserId) {
+                ownerActions.style.display = 'block';
+                downloadBtn.textContent = '下载原图';
+                downloadBtn.innerHTML = '<i class="bi bi-download btn-icon"></i> 下载原图';
+            } else {
+                ownerActions.style.display = 'none';
+            }
+
+            // 检查是否已购买
+            if (image.is_purchased) {
+                downloadBtn.disabled = false;
+            } else if (image.price > 0) {
+                // 付费图片且未购买
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = '购买后下载';
+                downloadBtn.innerHTML = '<i class="bi bi-lock btn-icon"></i> 购买后下载';
+                downloadBtn.addEventListener('click', () => openPurchaseModal(image));
+            } else {
+                // 免费图片
+                downloadBtn.disabled = false;
+            }
+
+            // 检查是否已点赞
+            if (image.is_liked) {
+                likeBtn.classList.add('btn-primary');
+                likeBtn.classList.remove('btn-outline-secondary');
+                likeText.textContent = '已喜欢';
+            }
+
+            // 显示图片详情容器
+            imageDetailContainer.style.display = 'block';
+        }
+
+        // 显示图片未找到
+        function showNotFound() {
+            notFoundContainer.style.display = 'block';
+            imageDetailContainer.style.display = 'none';
+        }
+
+        // 获取分类名称
+        function getCategoryName(category) {
+            const categories = {
+                'nature': '自然风光',
+                'city': '城市建筑',
+                'people': '人物肖像',
+                'animals': '动物宠物',
+                'food': '美食料理',
+                'travel': '旅行风景'
+            };
+            return categories[category] || category || '未分类';
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        }
+
+        // 下载图片
+        async function downloadImage() {
+            try {
+                showLoading();
+
+                // 调用API获取下载链接
+                const response = await axios.get(`${API_BASE_URL}/file/download?id=${currentImageId}`);
+
+                if (response.data.code === 0) {
+                    const downloadUrl = response.data.data.url;
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = response.data.data.filename || 'image.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    // 更新下载计数
+                    downloadCount.textContent = parseInt(downloadCount.textContent) + 1;
+                } else {
+                    showAlert(response.data.msg || '获取下载链接失败');
+                }
+            } catch (error) {
+                console.error('下载图片错误:', error);
+                showAlert('下载图片失败，请重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 点赞/取消点赞图片
+        async function toggleLike() {
+            try {
+                // 检查登录状态
+                if (!checkLoginStatus()) {
+                    showAlert('请先登录后再进行此操作', 'warning');
+                    return;
+                }
+
+                const isLiked = likeBtn.classList.contains('btn-primary');
+
+                // 调用API点赞/取消点赞
+                const response = await axios.post(`${API_BASE_URL}/file/${isLiked ? 'unlike' : 'like'}`, {
+                    id: currentImageId
+                });
+
+                if (response.data.code === 0) {
+                    if (isLiked) {
+                        // 取消点赞
+                        likeBtn.classList.remove('btn-primary');
+                        likeBtn.classList.add('btn-outline-secondary');
+                        likeText.textContent = '喜欢';
+                        likeCount.textContent = parseInt(likeCount.textContent) - 1;
+                    } else {
+                        // 点赞
+                        likeBtn.classList.add('btn-primary');
+                        likeBtn.classList.remove('btn-outline-secondary');
+                        likeText.textContent = '已喜欢';
+                        likeCount.textContent = parseInt(likeCount.textContent) + 1;
+                    }
+                } else {
+                    showAlert(response.data.msg || (isLiked ? '取消点赞失败' : '点赞失败'));
+                }
+            } catch (error) {
+                console.error('点赞操作错误:', error);
+                showAlert('操作失败，请重试');
+            }
+        }
+
+        // 分享图片
+        function shareImage() {
+            // 创建分享链接
+            const shareUrl = window.location.href;
+
+            // 复制到剪贴板
+            navigator.clipboard.writeText(shareUrl)
+                .then(() => {
+                    showAlert('分享链接已复制到剪贴板', 'success');
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                    showAlert('复制链接失败，请手动复制URL');
+                });
+        }
+
+        // 打开购买确认模态框
+        function openPurchaseModal(image) {
+            // 检查登录状态
+            if (!checkLoginStatus()) {
+                showAlert('请先登录后再进行购买', 'warning');
+                return;
+            }
+
+            // 设置模态框内容
+            modalImageTitle.textContent = image.title;
+            modalImagePrice.textContent = `¥${image.price.toFixed(2)}`;
+            purchaseImageId.value = image.id;
+
+            // 显示模态框
+            if (!purchaseModalInstance) {
+                purchaseModalInstance = new bootstrap.Modal(document.getElementById('purchaseModal'));
+            }
+            purchaseModalInstance.show();
+        }
+
+        // 确认购买图片
+        async function confirmPurchase() {
+            try {
+                const imageId = purchaseImageId.value;
+
+                showLoading();
+
+                // 调用API购买图片
+                const response = await axios.post(`${API_BASE_URL}/order/create`, {
+                    file_id: imageId
+                });
+
+                if (response.data.code === 0) {
+                    const order = response.data.data;
+                    // 跳转到支付页面
+                    window.location.href = `/payment?order_id=${order.id}`;
+                } else {
+                    showAlert(response.data.msg || '创建订单失败');
+                }
+            } catch (error) {
+                console.error('购买图片错误:', error);
+                showAlert('购买失败，请重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 获取评论列表
+        async function getComments(loadMore = false) {
+            try {
+                if (!loadMore) {
+                    commentPage = 1;
+                    commentsList.innerHTML = '';
+                }
+
+                // 显示加载更多按钮的加载状态
+                if (loadMore) {
+                    loadMoreCommentsBtn.disabled = true;
+                    loadMoreCommentsBtn.textContent = '加载中...';
+                }
+
+                // 调用API获取评论
+                const response = await axios.get(`${API_BASE_URL}/comment/list`, {
+                    params: {
+                        file_id: currentImageId,
+                        page: commentPage,
+                        limit: commentPageSize
+                    }
+                });
+
+                if (response.data.code === 0) {
+                    const data = response.data.data;
+                    const comments = data.items || [];
+
+                    if (comments.length > 0) {
+                        renderComments(comments);
+                        commentPage++;
+                        hasMoreComments = commentPage <= Math.ceil(data.total / commentPageSize);
+                    }
+
+                    // 控制加载更多按钮显示
+                    if (hasMoreComments) {
+                        loadMoreCommentsBtn.style.display = 'block';
+                        loadMoreCommentsBtn.disabled = false;
+                        loadMoreCommentsBtn.textContent = '加载更多评论';
+                    } else {
+                        loadMoreCommentsBtn.style.display = 'none';
+                    }
+
+                    // 如果没有评论且是第一页
+                    if (comments.length === 0 && commentPage === 1) {
+                        commentsList.innerHTML = '<div class="text-center text-muted py-3">暂无评论，快来发表第一条评论吧！</div>';
+                    }
+                } else {
+                    showAlert(response.data.msg || '获取评论失败');
+                }
+            } catch (error) {
+                console.error('获取评论错误:', error);
+                showAlert('获取评论失败，请重试');
+            }
+        }
+
+        // 渲染评论列表
+        function renderComments(comments) {
+            comments.forEach(comment => {
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment-item';
+                commentElement.innerHTML = `
+                    <div class="comment-header">
+                        <div class="comment-author">
+                            <img src="${comment.user_avatar || 'https://ui-avatars.com/api/?name=User&background=4e73df&color=fff'}" alt="用户头像" class="comment-avatar">
+                            <span class="comment-name">${comment.user_name || '匿名用户'}</span>
+                            <span class="comment-date">${formatDate(comment.created_at)}</span>
+                        </div>
+                    </div>
+                    <div class="comment-content">${comment.content}</div>
+                `;
+                commentsList.appendChild(commentElement);
+            });
+        }
+
+        // 提交评论
+        async function submitComment() {
+            try {
+                // 检查登录状态
+                if (!checkLoginStatus()) {
+                    showAlert('请先登录后再发表评论', 'warning');
+                    return;
+                }
+
+                const content = commentContent.value.trim();
+                if (!content) {
+                    showAlert('请输入评论内容');
+                    return;
+                }
+
+                showLoading();
+
+                // 调用API提交评论
+                const response = await axios.post(`${API_BASE_URL}/comment/create`, {
+                    file_id: currentImageId,
+                    content: content
+                });
+
+                if (response.data.code === 0) {
+                    showAlert('评论发表成功', 'success');
+                    commentContent.value = '';
+                    // 重新加载评论
+                    getComments();
+                } else {
+                    showAlert(response.data.msg || '发表评论失败');
+                }
+            } catch (error) {
+                console.error('提交评论错误:', error);
+                showAlert('发表评论失败，请重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 登出功能
+        logoutLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (confirm('确定要退出登录吗？')) {
+                try {
+                    showLoading();
+                    await axios.post(`${API_BASE_URL}/user/logout`);
+                } catch (error) {
+                    console.error('登出错误:', error);
+                } finally {
+                    // 清除本地存储
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userInfo');
+                    hideLoading();
+                    // 刷新页面
+                    window.location.reload();
+                }
+            }
+        });
+
+        // 下载按钮事件
+        downloadBtn.addEventListener('click', downloadImage);
+
+        // 点赞按钮事件
+        likeBtn.addEventListener('click', toggleLike);
+
+        // 分享按钮事件
+        shareBtn.addEventListener('click', shareImage);
+
+        // 提交评论按钮事件
+        submitCommentBtn.addEventListener('click', submitComment);
+
+        // 加载更多评论按钮事件
+        loadMoreCommentsBtn.addEventListener('click', () => {
+            getComments(true);
+        });
+
+        // 确认购买按钮事件
+        confirmPurchaseBtn.addEventListener('click', confirmPurchase);
+
+        // 页面加载时执行
+        window.addEventListener('DOMContentLoaded', () => {
+            // 检查登录状态
+            checkLoginStatus();
+
+            // 设置Axios请求头
+            setupAxios();
+
+            // 获取用户信息
+            getUserInfo();
+
+            // 获取未读通知数量
+            getUnreadNotificationCount();
+
+            // 获取图片详情
+            getImageDetail();
+        });
+    </script>
+</body>
+</html>

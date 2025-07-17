@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 图片分享平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { 
+            background-color: #f5f7fa; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .register-container { 
+            max-width: 450px; 
+            margin: auto; 
+            padding: 2rem; 
+            background-color: white; 
+            border-radius: 10px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.05); 
+        }
+        .btn-primary { 
+            background-color: #4e73df; 
+            border-color: #4e73df; 
+        }
+        .btn-primary:hover { 
+            background-color: #3a5ec8; 
+            border-color: #3a5ec8; 
+        }
+        .form-control:focus { 
+            border-color: #4e73df; 
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25); 
+        }
+        .logo { 
+            font-size: 2rem; 
+            color: #4e73df; 
+            margin-bottom: 1.5rem; 
+        }
+        .alert-container { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            z-index: 1050; 
+        }
+        .password-strength { 
+            height: 5px; 
+            margin-top: 5px; 
+            display: none; 
+        }
+        .strength-bar { 
+            height: 100%; 
+            width: 0%; 
+            transition: width 0.3s ease; 
+        }
+    </style>
+</head>
+<body>
+    <div class="alert-container"></div>
+
+    <div class="container register-container mt-5 mb-5">
+        <div class="text-center logo">
+            <i class="bi bi-image-fill"></i> 图片分享平台
+        </div>
+        <h3 class="text-center mb-4">用户注册</h3>
+
+        <form id="registerForm">
+            <div class="mb-3">
+                <label for="username" class="form-label">用户名</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" class="form-control" id="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-text">用户名长度为4-20个字符</div>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">邮箱</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" placeholder="请输入邮箱" required>
+                </div>
+                <div class="form-text">用于登录和接收通知</div>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" class="form-control" id="password" placeholder="请输入密码" required>
+                </div>
+                <div class="password-strength">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                <div class="form-text" id="passwordTips">密码至少8位，包含字母和数字</div>
+            </div>
+            <div class="mb-3">
+                <label for="confirmPassword" class="form-label">确认密码</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="请再次输入密码" required>
+                </div>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                <label class="form-check-label" for="agreeTerms">同意<a href="#" class="text-primary">服务条款</a>和<a href="#" class="text-primary">隐私政策</a></label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" id="registerBtn">
+                <span id="registerBtnText">注册</span>
+                <span id="registerBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+            <div class="text-center mt-3">
+                <a href="/web/login.html" class="text-decoration-none">已有账号？立即登录</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // API基础URL
+        const API_BASE_URL = '/api';
+
+        // DOM元素
+        const registerForm = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerBtnText = document.getElementById('registerBtnText');
+        const registerBtnSpinner = document.getElementById('registerBtnSpinner');
+        const alertContainer = document.querySelector('.alert-container');
+        const strengthBar = document.getElementById('strengthBar');
+        const passwordTips = document.getElementById('passwordTips');
+        const passwordStrength = document.querySelector('.password-strength');
+
+        // 显示通知
+        function showAlert(message, type = 'danger') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.role = 'alert';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alert);
+
+            // 3秒后自动关闭
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 3000);
+        }
+
+        // 设置按钮加载状态
+        function setLoading(isLoading) {
+            if (isLoading) {
+                registerBtn.disabled = true;
+                registerBtnText.classList.add('d-none');
+                registerBtnSpinner.classList.remove('d-none');
+            } else {
+                registerBtn.disabled = false;
+                registerBtnText.classList.remove('d-none');
+                registerBtnSpinner.classList.add('d-none');
+            }
+        }
+
+        // 检查密码强度
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let tips = '';
+            let color = '#dc3545'; // 红色-弱
+
+            if (password.length >= 8) strength++;
+            if (password.match(/[A-Za-z]/) && password.match(/[0-9]/)) strength++;
+            if (password.match(/[^A-Za-z0-9]/)) strength++;
+
+            switch(strength) {
+                case 0:
+                case 1:
+                    tips = '密码强度：弱 (至少8位，包含字母和数字)';
+                    color = '#dc3545';
+                    break;
+                case 2:
+                    tips = '密码强度：中 (建议包含特殊字符)';
+                    color = '#ffc107';
+                    break;
+                case 3:
+                    tips = '密码强度：强';
+                    color = '#28a745';
+                    break;
+            }
+
+            strengthBar.style.width = (strength * 33.3) + '%';
+            strengthBar.style.backgroundColor = color;
+            passwordTips.textContent = tips;
+        }
+
+        // 表单提交处理
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // 获取表单数据
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            const confirmPassword = confirmPasswordInput.value.trim();
+
+            // 表单验证
+            if (!username || !email || !password || !confirmPassword) {
+                showAlert('请填写所有必填字段');
+                return;
+            }
+
+            // 用户名验证
+            if (username.length < 4 || username.length > 20) {
+                showAlert('用户名长度必须为4-20个字符');
+                return;
+            }
+
+            // 邮箱格式验证
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('请输入有效的邮箱地址');
+                return;
+            }
+
+            // 密码验证
+            if (password.length < 8) {
+                showAlert('密码长度至少为8个字符');
+                return;
+            }
+
+            if (!password.match(/[A-Za-z]/) || !password.match(/[0-9]/)) {
+                showAlert('密码必须包含字母和数字');
+                return;
+            }
+
+            // 确认密码验证
+            if (password !== confirmPassword) {
+                showAlert('两次输入的密码不一致');
+                return;
+            }
+
+            try {
+                // 设置加载状态
+                setLoading(true);
+
+                // 调用注册API
+                const response = await axios.post(`${API_BASE_URL}/register`, {
+                    username,
+                    email,
+                    password
+                });
+
+                // 注册成功
+                if (response.data.code === 0) {
+                    showAlert('注册成功，请登录', 'success');
+
+                    // 跳转到登录页
+                    setTimeout(() => {
+                        window.location.href = '/web/login.html';
+                    }, 1500);
+                } else {
+                    showAlert(response.data.msg || '注册失败，请重试');
+                }
+            } catch (error) {
+                console.error('注册错误:', error);
+                if (error.response && error.response.data && error.response.data.msg) {
+                    showAlert(error.response.data.msg);
+                } else {
+                    showAlert('网络错误，请稍后重试');
+                }
+            } finally {
+                // 恢复按钮状态
+                setLoading(false);
+            }
+        });
+
+        // 密码强度实时检查
+        passwordInput.addEventListener('input', (e) => {
+            const password = e.target.value;
+            if (password.length > 0) {
+                passwordStrength.style.display = 'block';
+                checkPasswordStrength(password);
+            } else {
+                passwordStrength.style.display = 'none';
+                passwordTips.textContent = '密码至少8位，包含字母和数字';
+            }
+        });
+
+        // 页面加载时检查是否已登录
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // 已登录，跳转到仪表盘
+                window.location.href = '/dashboard';
+            }
+        });
+    </script>
+</body>
+</html>

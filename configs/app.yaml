@@ -1,0 +1,39 @@
+server:
+  port: 8080
+  read_timeout: 15s
+  write_timeout: 15s
+  idle_timeout: 60s
+
+database:
+  driver: mysql
+  dsn: root:root@tcp(localhost:3306)/photo_wall?charset=utf8mb4&parseTime=True&loc=Local
+  max_open_conns: 100
+  max_idle_conns: 20
+  conn_max_lifetime: 300s
+
+storage:
+  root_path: ./static/uploads
+  allowed_types: [ "image/jpeg","image/png","image/gif","image/webp" ]
+  max_size: 10
+  hash_filename: true
+
+jwt:
+  secret: your-secure-jwt-secret-key-here
+  expire_hours: 24
+
+log:
+  level: info
+  output: stdout
+  file_path: logs/app.log
+  max_size: 100
+  max_backup: 10
+  max_age: 30
+  compress: true
+
+payment:
+  alipay:
+    app_id: "your_app_id"
+    private_key: "your_private_key"
+    public_key: "alipay_public_key"
+    return_url: "http://yourdomain.com/pay/return"
+    notify_url: "http://yourdomain.com/pay/notify"
